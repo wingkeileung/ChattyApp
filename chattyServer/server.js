@@ -19,8 +19,15 @@ wss.broadcast = function broadcast(data) {
   });
 };
 
+function userCount() {
+  const userNum = { type: "count", userNum:wss.clients.size};
+  wss.broadcast(JSON.stringify(userNum));
+};
+
+
 wss.on('connection', (ws) => {
   console.log('Client connected');
+  userCount();
 
   ws.on('message', (message) => {
     console.log('Message is here!');
@@ -45,5 +52,8 @@ wss.on('connection', (ws) => {
     wss.broadcast(JSON.stringify(newReceivedMessage));
   }
  });
-  ws.on('close', () => console.log('Client disconnected'));
+  ws.on('close', () => {
+    console.log('Client disconnected')
+    userCount();
+    });
 });

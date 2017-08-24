@@ -67,7 +67,9 @@ class App extends Component {
           newMessages.push({content: this.state.oldName + " changed their username to " + messageData.username});
           this.setState({messages: newMessages});
           console.log(e.data);
-
+      } else if (messageData.type === "count") {
+        //link to navbar for update
+          this.setState({userNum: messageData.userNum});
       }
 
       this.setState({messages: newMessages});
@@ -77,7 +79,7 @@ class App extends Component {
   render() {
     return (
       <div>
-          <NavBar/>
+          <NavBar userNum ={this.state.userNum}/>
           <MessageList messages={ this.state.messages}/>
           <ChatBar sendMessage={text => this.sendMessage(text)} changeUsername={text => this.changeUsername(text)}/>
       </div>
