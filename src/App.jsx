@@ -2,72 +2,87 @@ import React, {Component} from 'react';
 import MessageList from './MessageList.jsx'
 import ChatBar from './ChatBar.jsx'
 import NavBar from './NavBar.jsx'
-// import TimerComponent from './TimerComponent.jsx'
-// import UserData from './UserData.jsx'
-// import SetUser from './SetUser.jsx'
 
 const ChattyData = {
   currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
   messages: [
-    {
-      id: 1,
+    { id: "1",
       username: "Bob",
       content: "Has anyone seen my marbles?",
     },
-    {
-      id: 2,
+    { id: "2",
       username: "Anonymous",
       content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
     }
   ]
 }
 
-const uuidv1 = require('uuid/v1');
-
 class App extends Component {
   constructor() {
-        super();
-        this.state = {
-            currentUser: ChattyData.currentUser.name,
-            messages: ChattyData.messages
-        }
-    this.index = 3;
+      super();
+      this.state = {
+        currentUser: ChattyData.currentUser.name,
+        messages: ChattyData.messages,
+        oldName:null
+      }
+      this.index = 4;
   }
 
-  componentDidMount() {
-  this.socket = new WebSocket('ws://localhost:3001');
-
-  this.socket.addEventListener('message', (event) => {
-      // console.log('Got a broadcast message');
-      console.log(event.data);
-      const newMessages = this.state.messages;
-      const messageObject = JSON.parse(event.data);
-      newMessages.push(messageObject);
-      this.setState({messages: newMessages});
-    });
-}
   sendMessage(text){
-    console.log(text);
-    const newMessage = {
-      id: this.index,
-      username: this.state.currentUser,
-      content: text
-    }
-    this.socket.send(JSON.stringify(newMessage));
+   const newMessage = {
+    content: text,
+    id: this.index,
+    type: "postMessage",
+    username: this.state.currentUser
+   }
+    this.socket.send(JSON.stringify(newMessage), 'message');
   }
 
   changeUsername(newUsername){
+    this.setState({oldName: this.state.currentUser});
     this.setState({currentUser: newUsername});
+    const newUser = {
+      content: this.state.content,
+      id: this.index,
+      type: "postNotification",
+      username: newUsername
+   }
+    this.socket.send(JSON.stringify(newUser), 'message');
+   //TO DO : Send a system message saying that the user changed their name.
+  }
+
+  componentDidMount() {
+    this.socket = new WebSocket('ws://localhost:3001')
+
+    this.socket.addEventListener('message', (e) => {
+      console.log(e.data);
+      const newMessages = this.state.messages;
+      const messageData = JSON.parse(e.data);
+
+      if(messageData.type === "incomingMessage"){
+           newMessages.push(messageData);
+           this.setState({messages: newMessages});
+           console.log(e.data);
+      } else if (messageData.type === "incomingNotification") {
+          newMessages.push({content: this.state.oldName + " changed their username to " + messageData.username});
+          this.setState({messages: newMessages});
+          console.log(e.data);
+
+      }
+
+      this.setState({messages: newMessages});
+    });
   }
 
   render() {
     return (
       <div>
-        <NavBar/>
-        <MessageList messages={ this.state.messages }/>
-        <ChatBar changeUsername={ text => this.changeUsername(text)} sendMessage={text => this.sendMessage(text)}/>
+          <NavBar/>
+          <MessageList messages={ this.state.messages}/>
+          <ChatBar sendMessage={text => this.sendMessage(text)} changeUsername={text => this.changeUsername(text)}/>
       </div>
     );
   }
 }
+
 export default App;
