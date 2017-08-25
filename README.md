@@ -1,4 +1,5 @@
 # Chatty App
+
 =====================
 Chatty app is a simple single-page instant messenger client and server app
 
