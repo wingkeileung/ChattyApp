@@ -1,6 +1,6 @@
 # Chatty App
-
 =====================
+
 Chatty app is a simple single-page instant messenger client and server app
 
 This project was created to practice doing HTML, CSS, JS, ReactJS, 
