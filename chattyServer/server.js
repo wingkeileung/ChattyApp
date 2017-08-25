@@ -52,6 +52,7 @@ wss.on('connection', (ws) => {
     wss.broadcast(JSON.stringify(newReceivedMessage));
   }
  });
+
   ws.on('close', () => {
     console.log('Client disconnected')
     userCount();
