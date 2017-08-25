@@ -14,58 +14,56 @@ class App extends Component {
     this.state = {
       currentUser: ChattyData.currentUser.name,
       messages: ChattyData.messages,
-      oldName:null
     }
-    this.index = 4;
   }
 
   sendMessage(text){
-   const newMessage = {
-    content: text,
-    id: this.index,
-    type: 'postMessage',
-    username: this.state.currentUser
-   }
-    this.socket.send(JSON.stringify(newMessage), 'message');
+    const newMessage = {
+      content: text,
+      type: 'postMessage',
+      username: this.state.currentUser
+    }
+    this.socket.send(JSON.stringify(newMessage));
   }
 
   changeUsername(newUsername){
-    this.setState({oldName: this.state.currentUser});
+    const oldUsername = this.state.currentUser;
     this.setState({currentUser: newUsername});
     const newUser = {
-      content: this.state.content,
-      id: this.index,
+      content: oldUsername + " changed their name to " + newUsername,
       type: 'postNotification',
-      username: newUsername
     }
-    this.socket.send(JSON.stringify(newUser), 'message');
+    this.socket.send(JSON.stringify(newUser));
   }
 
   componentDidMount() {
     this.socket = new WebSocket('ws://localhost:3001')
 
     this.socket.addEventListener('message', (e) => {
-      const newMessages = this.state.messages;
+      const newMessages = this.state.messages.concat();
       const messageData = JSON.parse(e.data);
 
-      if(messageData.type === 'incomingMessage'){
-        newMessages.push(messageData);
-        this.setState({messages: newMessages});
-      } else if (messageData.type === 'incomingNotification') {
-        newMessages.push({content: this.state.oldName + ' changed their username to ' + messageData.username});
-        this.setState({messages: newMessages});
-      } else if (messageData.type === 'count') {
-        this.setState({userNum: messageData.userNum});
+      switch (messageData.type) {
+        case 'incomingMessage':
+          // fall-through
+        case 'incomingNotification':
+          newMessages.push(messageData);
+          this.setState({messages: newMessages});
+          break;
+        case 'count':
+          this.setState({userNum: messageData.userNum});
+          break;
+        default:
+          console.error("Error: websocket message with invalid type:", type);
       }
-      this.setState({messages: newMessages});
     });
   }
 
   render() {
     return (
       <div>
-        <NavBar userNum ={this.state.userNum}/>
-        <MessageList messages={ this.state.messages}/>
+        <NavBar userNum={this.state.userNum}/>
+        <MessageList messages={this.state.messages}/>
         <ChatBar sendMessage={text => this.sendMessage(text)} changeUsername={text => this.changeUsername(text)}/>
       </div>
     );

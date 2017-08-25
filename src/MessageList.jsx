@@ -9,12 +9,13 @@ class MessageList extends Component {
       id = { message.id }
       username = { message.username }
       content = { message.content }
-    />})
+    />});
+
     return (
       <div>
         {messages}
       </div>
-    )
+    );
   }
 }
 export default MessageList;

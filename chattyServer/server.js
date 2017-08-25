@@ -20,7 +20,7 @@ wss.broadcast = function broadcast(data) {
 };
 
 function userCount() {
-  const userNum = { type: "count", userNum:wss.clients.size};
+  const userNum = { type: "count", userNum:wss.clients.size };
   wss.broadcast(JSON.stringify(userNum));
 };
 
@@ -33,28 +33,27 @@ wss.on('connection', (ws) => {
     console.log('Message is here!');
     const receivedMessage = JSON.parse(message);
 
-    if(receivedMessage.type === 'postMessage') {
-    const newReceivedMessage = {
-      content: receivedMessage.content,
-      id: uuidv1(),
-      type:'incomingMessage',
-      username: receivedMessage.username
-    }
+    if (receivedMessage.type === 'postMessage') {
+      const newReceivedMessage = {
+        content: receivedMessage.content,
+        id: uuidv1(),
+        type:'incomingMessage',
+        username: receivedMessage.username
+      }
 
-    wss.broadcast(JSON.stringify(newReceivedMessage));
-  } else if (receivedMessage.type === 'postNotification'){
-    const newReceivedMessage ={
-      content: receivedMessage.content,
-      id: uuidv1(),
-      type: 'incomingNotification',
-      username: receivedMessage.username
+      wss.broadcast(JSON.stringify(newReceivedMessage));
+    } else if (receivedMessage.type === 'postNotification') {
+      const newReceivedMessage = {
+        content: receivedMessage.content,
+        id: uuidv1(),
+        type: 'incomingNotification'
+      }
+      wss.broadcast(JSON.stringify(newReceivedMessage));
     }
-    wss.broadcast(JSON.stringify(newReceivedMessage));
-  }
- });
+  });
 
   ws.on('close', () => {
     console.log('Client disconnected')
     userCount();
-    });
+  });
 });
